@@ -17,6 +17,7 @@ class Shopify
     protected $client;
     protected $responseStatusCode;
     protected $reasonPhrase;
+    protected $ip;
 
     public function __construct(Client $client)
     {
@@ -120,6 +121,12 @@ class Shopify
         return collect(json_decode(json_encode($response)));
     }
 
+    public function addProxy($ip)
+    {
+        $this->ip = $ip;
+        return $this;
+    }
+
     private function makeRequest($method, $uri, $params = [], $headers = [])
     {
         $query = in_array($method, ['get','delete']) ? "query" : "json";
@@ -134,7 +141,11 @@ class Shopify
                 'timeout' => 120.0,
                 'connect_timeout' => 120.0,
                 'http_errors' => false,
-                "verify" => false
+                "verify" => false,
+                "proxy" => [
+                    'http' => $this->ip,
+                    'https' => $this->ip
+                ],
             ]);
 
         $this->parseResponse($response);
